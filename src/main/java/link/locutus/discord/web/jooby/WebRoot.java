@@ -161,7 +161,7 @@ public class WebRoot {
                     staticFiles.location = Location.EXTERNAL;
                 }
             });
-        }).start(port);
+        }).startAsync(port);
 
         this.pageHandler = new PageHandler(this);
         this.webDB = new WebDB();
