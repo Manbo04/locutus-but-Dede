@@ -3,7 +3,6 @@ FROM eclipse-temurin:22-jdk-jammy AS builder
 
 WORKDIR /build
 
-# Copy gradle files and source code
 COPY gradlew .
 COPY gradlew.bat .
 COPY gradle/ gradle/
@@ -12,12 +11,18 @@ COPY settings.gradle .
 COPY gradle.properties .
 COPY src/ src/
 
-# Accept API Key for the Code Generator
-ARG PNW_KEY
-ENV PNW_KEY=$PNW_KEY
-ENV apiKey=$PNW_KEY
+# --- HARDCODED KEY FIX ---
+# We are pasting the key directly here to bypass the Railway UI issue.
+ENV PNW_KEY=28b5d27d6a88e91d5408
+ENV apiKey=28b5d27d6a88e91d5408
 
-# Make gradlew executable and build the shadow JAR (skip tests only, allow codegen to run)
+# Create config files manually so the builder finds them
+RUN echo "apiKey: 28b5d27d6a88e91d5408" > bot_config.json && \
+    echo "pnwKey: 28b5d27d6a88e91d5408" >> bot_config.json && \
+    echo "apiKey: 28b5d27d6a88e91d5408" > config.yml && \
+    echo "pnwKey: 28b5d27d6a88e91d5408" >> config.yml
+
+# Build the shadow JAR
 RUN chmod +x gradlew && ./gradlew shadowJar --no-daemon -x test
 
 # Stage 2: Runtime stage
@@ -25,12 +30,12 @@ FROM eclipse-temurin:22-jre-jammy
 
 WORKDIR /app
 
-# --- FIX 1: Use a wildcard (*) to grab the jar whatever it is named ---
 COPY --from=builder /build/build/libs/*.jar bot.jar
-
-# --- FIX 2: Copy the script we are about to make ---
 COPY entrypoint.sh .
 RUN chmod +x entrypoint.sh
+
+# Create data directory
+RUN mkdir -p /app/data
 
 # --- FIX 3: Run the script instead of Java directly ---
 ENTRYPOINT ["./entrypoint.sh"]
