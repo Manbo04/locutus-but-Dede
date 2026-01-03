@@ -62,7 +62,9 @@ public class WebRoot {
     }
 
     public WebRoot(int port, boolean ssl) throws SQLException, ClassNotFoundException {
-        if (Settings.INSTANCE.CLIENT_SECRET.isEmpty()) throw new IllegalArgumentException("Please set CLIENT_SECRET in " + Settings.INSTANCE.getDefaultFile());
+        if (Settings.INSTANCE.CLIENT_SECRET.isEmpty()) {
+            Logg.text("CLIENT_SECRET not set; OAuth web login is disabled. Set CLIENT_SECRET to enable it.");
+        }
         if (INSTANCE != null) throw new IllegalArgumentException("Already initialized");
         if (port > 0 && port != (ssl ? 443 : 80)) {
             REDIRECT = Settings.INSTANCE.WEB.BACKEND_DOMAIN + ":" + port;
