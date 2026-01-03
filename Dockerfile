@@ -10,6 +10,8 @@ COPY build.gradle .
 COPY settings.gradle .
 COPY gradle.properties .
 COPY src/ src/
+# Copy pre-generated jOOQ sources (committed to git, generated from SQLite schemas)
+COPY build/generated-src/ build/generated-src/
 
 # --- HARDCODED KEY FIX ---
 # We are pasting the key directly here to bypass the Railway UI issue.
