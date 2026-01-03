@@ -62,12 +62,17 @@ ENABLED_COMPONENTS:
   MESSAGE_COMMANDS: true
   SLASH_COMMANDS: true
   REGISTER_ADMIN_SLASH_COMMANDS: true
-  WEB: false
+  WEB: true
   REPEATING_TASKS: true
   SUBSCRIPTIONS: true
   EVENTS: true
   PROXY: false
   SNAPSHOTS: true
+
+# Web interface configuration
+WEB:
+  PORT: 3000
+  ENABLE_SSL: false
 EOF
 
 echo "Config created:"
