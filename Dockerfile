@@ -27,9 +27,5 @@ COPY --from=builder /build/build/libs/*.jar bot.jar
 COPY entrypoint.sh .
 RUN chmod +x entrypoint.sh
 
-# Create data directory
-RUN mkdir -p /app/data
-VOLUME /app/data
-
 # --- FIX 3: Run the script instead of Java directly ---
 ENTRYPOINT ["./entrypoint.sh"]
