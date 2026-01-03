@@ -1,5 +1,5 @@
 # Stage 1: Build stage
-FROM eclipse-temurin:21-jdk-jammy AS builder
+FROM eclipse-temurin:22-jdk-jammy AS builder
 
 WORKDIR /build
 
@@ -19,7 +19,7 @@ RUN chmod +x gradlew
 RUN ./gradlew shadowJar --no-daemon
 
 # Stage 2: Runtime stage
-FROM eclipse-temurin:21-jre-jammy
+FROM eclipse-temurin:22-jre-jammy
 
 WORKDIR /app
 
