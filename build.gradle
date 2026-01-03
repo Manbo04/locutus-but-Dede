@@ -463,10 +463,6 @@ tasks.register('graphqlCodegenProductService', GraphQLCodegenGradleTask) {
 
     supportUnknownFields = true
     unknownFieldsPropertyName = "additionalFields"
-
-    onlyIf {
-        !outputDir.exists() || outputDir.listFiles().length == 0
-    }
 }
 
 tasks.withType(JavaCompile).configureEach {
