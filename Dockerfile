@@ -12,6 +12,9 @@ COPY settings.gradle .
 COPY gradle.properties .
 COPY src/ src/
 
+# Make gradlew executable
+RUN chmod +x gradlew
+
 # Build the shadow JAR
 RUN ./gradlew shadowJar --no-daemon
 
