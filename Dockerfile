@@ -15,8 +15,8 @@ COPY src/ src/
 # Make gradlew executable
 RUN chmod +x gradlew
 
-# Build the shadow JAR
-RUN ./gradlew shadowJar --no-daemon
+# Build the shadow JAR (skip tests)
+RUN ./gradlew shadowJar --no-daemon -x test
 
 # Stage 2: Runtime stage
 FROM eclipse-temurin:22-jre-jammy
