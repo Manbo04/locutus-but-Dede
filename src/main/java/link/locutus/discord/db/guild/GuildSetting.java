@@ -536,9 +536,8 @@ public abstract class GuildSetting<T> {
     }
 
     public T allowedAndValidate(GuildDB db, User user, T value) {
-        boolean isAdmin = Roles.ADMIN.has(user, db.getGuild());
         DBNation nation = DiscordUtil.getNation(user);
-        if (nation == null && !isAdmin && (!Settings.INSTANCE.DISCORD.BOT_OWNER_IS_LOCUTUS_ADMIN || user.getIdLong() != Locutus.loader().getAdminUserId())) {
+        if (nation == null && (!Settings.INSTANCE.DISCORD.BOT_OWNER_IS_LOCUTUS_ADMIN || user.getIdLong() != Locutus.loader().getAdminUserId())) {
             throw new IllegalArgumentException("You are not registered with the bot (see: " + CM.register.cmd.toSlashMention() + ")");
         }
         if (!allowed(db, true)) {
