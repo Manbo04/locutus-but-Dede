@@ -6,13 +6,14 @@ mkdir -p config
 # Always recreate config to pick up latest env vars
 echo "Creating config/config.yaml from Railway variables..."
 cat > config/config.yaml << EOF
-token: "${DISCORD_TOKEN}"
-ownerId: ${OWNER_ID}
-apiKey: "${PNW_KEY}"
+BOT_TOKEN: "${BOT_TOKEN}"
+APPLICATION_ID: ${APPLICATION_ID}
+API_KEY_PRIMARY: "${API_KEY_PRIMARY}"
 ROOT_SERVER: ${ROOT_SERVER}
 EOF
 
-echo "Config created with ROOT_SERVER: ${ROOT_SERVER}"
+echo "Config created:"
+cat config/config.yaml
 
 # Start the bot
 exec java -jar bot.jar
