@@ -22,8 +22,8 @@ RUN echo "apiKey: 28b5d27d6a88e91d5408" > bot_config.json && \
     echo "apiKey: 28b5d27d6a88e91d5408" > config.yml && \
     echo "pnwKey: 28b5d27d6a88e91d5408" >> config.yml
 
-# Build the shadow JAR
-RUN chmod +x gradlew && ./gradlew shadowJar --no-daemon -x test
+# Build the shadow JAR (skip tests and failing graphql codegen task)
+RUN chmod +x gradlew && ./gradlew shadowJar --no-daemon -x test -x graphqlCodegenProductService
 
 # Stage 2: Runtime stage
 FROM eclipse-temurin:22-jre-jammy
