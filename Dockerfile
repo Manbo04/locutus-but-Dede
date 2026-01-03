@@ -12,11 +12,13 @@ COPY settings.gradle .
 COPY gradle.properties .
 COPY src/ src/
 
-# Make gradlew executable
-RUN chmod +x gradlew
+# Accept API Key for the Code Generator
+ARG PNW_KEY
+ENV PNW_KEY=$PNW_KEY
+ENV apiKey=$PNW_KEY
 
-# Build the shadow JAR (skip tests and graphql codegen)
-RUN ./gradlew shadowJar --no-daemon -x test -x graphqlCodegenProductService
+# Make gradlew executable and build the shadow JAR (skip tests only, allow codegen to run)
+RUN chmod +x gradlew && ./gradlew shadowJar --no-daemon -x test
 
 # Stage 2: Runtime stage
 FROM eclipse-temurin:22-jre-jammy
