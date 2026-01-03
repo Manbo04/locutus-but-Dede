@@ -114,6 +114,12 @@ publishing {
     }
 }
 
+jte {
+    generate()
+    sourceDirectory = file("src/main/jte").toPath()
+    targetDirectory = file("$buildDir/generated-sources/jte").toPath()
+}
+
 compileJava.options.compilerArgs.addAll('-Xmaxerrs', '1000')
 compileJava.options.compilerArgs.add '-parameters'
 compileTestJava.options.compilerArgs.add '-parameters'
