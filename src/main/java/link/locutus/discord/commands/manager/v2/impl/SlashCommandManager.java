@@ -772,11 +772,13 @@ public class SlashCommandManager extends ListenerAdapter {
 
         if (cmd == null) {
             Logg.text("[Autocomplete]" + user + " | No command found for: `" + path + "`");
+            RateLimitUtil.queue(event.replyChoices(Collections.emptyList()));
             return;
         }
 
         if (!(cmd instanceof ParametricCallable parametric)) {
             Logg.text("[Autocomplete]" + user + " | Cannot provide completions for a command group: `" + path + "`");
+            RateLimitUtil.queue(event.replyChoices(Collections.emptyList()));
             return;
         }
 
@@ -784,6 +786,7 @@ public class SlashCommandManager extends ListenerAdapter {
         ParameterData param = map.get(optionName);
         if (param == null) {
             Logg.text("[Autocomplete]" + user + " | No parameter found for `" + optionName + "` (args: `" + map.keySet() + "`) at `" + path + "`");
+            RateLimitUtil.queue(event.replyChoices(Collections.emptyList()));
             return;
         }
 
@@ -810,6 +813,7 @@ public class SlashCommandManager extends ListenerAdapter {
 
                     if (parser == null) {
                         Logg.text("[Autocomplete]" + user + " | No parser or completer found for `" + key + "` at `" + path + "`");
+                        RateLimitUtil.queue(event.replyChoices(Collections.emptyList()));
                         return;
                     }
 
@@ -835,6 +839,7 @@ public class SlashCommandManager extends ListenerAdapter {
                         if (!(result instanceof List) || ((List<?>) result).isEmpty()) {
                             long diff = System.currentTimeMillis() - (startNanos / 1_000_000);
                             Logg.text("[Autocomplete]" + user + " | No results for `" + option.getValue() + "` at `" + path + "` took " + diff + "ms");
+                            RateLimitUtil.queue(event.replyChoices(Collections.emptyList()));
                             return;
                         }
                         List<Object> resultList = (List<Object>) result;
@@ -872,7 +877,9 @@ public class SlashCommandManager extends ListenerAdapter {
                         RateLimitUtil.queue(event.replyChoices(choices));
                     }
                 } catch (Throwable e) {
+                    Logg.text("[Autocomplete]" + user + " | Error at `" + path + "`: " + e.getMessage());
                     e.printStackTrace();
+                    RateLimitUtil.queue(event.replyChoices(Collections.emptyList()));
                 }
             }
         });
