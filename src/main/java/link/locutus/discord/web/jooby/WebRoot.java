@@ -161,7 +161,7 @@ public class WebRoot {
                     staticFiles.location = Location.EXTERNAL;
                 }
             });
-        }).startAsync(port);
+        });
 
         this.pageHandler = new PageHandler(this);
         this.webDB = new WebDB();
@@ -267,6 +267,16 @@ public class WebRoot {
         this.fileRoot = new File("files");
 
         this.app.get("/", pageHandler::handle);
+        
+        // Start web server in background thread to avoid blocking bot startup
+        new Thread(() -> {
+            try {
+                this.app.start(port);
+            } catch (Exception e) {
+                Logg.error("Failed to start web server: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }, "WebServer-Startup").start();
     }
 
 //    private void registerClasses(Fury fury) {
