@@ -271,9 +271,8 @@ public interface IMessageBuilder {
             nextPageCmd = cmdCleared + " page:" + (page + 1);
         } else if (command.charAt(0) == '{') {
             JSONObject json = new JSONObject(command);
-            Map<String, Object> arguments = json.toMap();
-            previousPageCmd = new JSONObject(arguments).put("page", page - 1).toString();
-            nextPageCmd = new JSONObject(arguments).put("page", page + 1).toString();
+            previousPageCmd = new JSONObject(json.toString()).put("page", page - 1).toString();
+            nextPageCmd = new JSONObject(json.toString()).put("page", page + 1).toString();
         } else {
             String cmdCleared = command.replaceAll("-p " + "[0-9]+", "");
             if (!cmdCleared.isEmpty() && !Locutus.cmd().isModernPrefix(cmdCleared.charAt(0))) {
