@@ -3,6 +3,10 @@
 # Create config directory if it doesn't exist
 mkdir -p config
 
+# Trim whitespace from environment variables
+BOT_TOKEN=$(echo "$BOT_TOKEN" | tr -d '[:space:]')
+API_KEY_PRIMARY=$(echo "$API_KEY_PRIMARY" | tr -d '[:space:]')
+
 # Always recreate config to pick up latest env vars
 echo "Creating config/config.yaml from Railway variables..."
 cat > config/config.yaml << EOF
