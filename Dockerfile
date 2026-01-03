@@ -24,6 +24,9 @@ RUN echo "apiKey: 28b5d27d6a88e91d5408" > bot_config.json && \
     echo "apiKey: 28b5d27d6a88e91d5408" > config.yml && \
     echo "pnwKey: 28b5d27d6a88e91d5408" >> config.yml
 
+# Remove references to missing _test.command package (private developer code not in public repo)
+RUN sed -i '/_test\.command/d' src/main/java/link/locutus/discord/commands/manager/v2/impl/pw/refs/CM.java
+
 # Build the shadow JAR (skip tests which require database, disable config cache for GraphQL codegen)
 RUN chmod +x gradlew && ./gradlew shadowJar --no-daemon --no-configuration-cache -x test
 
