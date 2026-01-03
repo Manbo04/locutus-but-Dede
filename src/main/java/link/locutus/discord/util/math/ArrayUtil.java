@@ -299,6 +299,18 @@ public class ArrayUtil {
         return total;
     }
 
+    /**
+     * Applies a binary operator across multiple arrays, combining them element-wise.
+     * <p>
+     * The operation is applied left-to-right: result = arrays[0] op arrays[1] op ... op arrays[n]
+     * </p>
+     *
+     * @param operator The binary operator to apply (e.g., addition, multiplication)
+     * @param newArr If true, creates a new array; if false, modifies the first array in-place
+     * @param arrays Variable number of arrays to combine. Must all have the same length.
+     * @return The combined array, or null if no arrays provided, or first array if only one provided
+     * @throws ArrayIndexOutOfBoundsException if arrays have different lengths
+     */
     public static double[] apply(DoubleBinaryOperator operator, boolean newArr, double[]... arrays) {
         if (arrays.length == 0) return null;
         if (arrays.length == 1) return arrays[0];
@@ -322,12 +334,27 @@ public class ArrayUtil {
         return result;
     }
 
+    /**
+     * Converts an array of dollar amounts to cents (multiplies by 100).
+     * <p>
+     * Useful for precise currency calculations by avoiding floating-point precision issues.
+     * </p>
+     *
+     * @param deposit Array of dollar amounts
+     * @return Array of cent amounts (rounded to nearest long)
+     */
     public static long[] dollarToCents(double[] deposit) {
         long[] depositCents = new long[deposit.length];
         for (int i = 0; i < deposit.length; i++) depositCents[i] = (long) (deposit[i] * 100);
         return depositCents;
     }
 
+    /**
+     * Converts an array of cent amounts to dollars (divides by 100).
+     *
+     * @param cents Array of cent amounts
+     * @return Array of dollar amounts
+     */
     public static double[] centsToDollars(long[] cents) {
         double[] dollars = new double[cents.length];
         for (int i = 0; i < cents.length; i++) dollars[i] = cents[i] / 100d;
@@ -542,12 +569,18 @@ public class ArrayUtil {
     }
 
     /**
-     * Cached supplier
-     * @param delegate
-     * @param <T>
-     * @return
+     * Creates a thread-safe memoized (cached) supplier that computes the value only once.
+     * <p>
+     * The supplier will call the delegate on first access and cache the result for subsequent calls.
+     * Uses double-checked locking for thread safety. The cached value can be null.
+     * </p>
+     *
+     * @param delegate The supplier to memoize. Must not be null.
+     * @param <T> The type of values supplied by the supplier
+     * @return A memoized supplier that returns the cached result
+     * @throws NullPointerException if delegate is null on first invocation
      */
-    public static <T> Supplier<T> memorize(Supplier<T> delegate) {
+    public static <T> Supplier<T> memoize(Supplier<T> delegate) {
         AtomicBoolean valueSet = new AtomicBoolean();
         AtomicReference<T> value = new AtomicReference<>();
         return () -> {

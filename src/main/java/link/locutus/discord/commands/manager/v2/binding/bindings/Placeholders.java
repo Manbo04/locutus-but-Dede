@@ -423,7 +423,7 @@ public abstract class Placeholders<T, M> extends BindingHelper {
     protected String wrapHashLegacy(ValueStore store2, String input) {
         if (input.contains("%")) {
             if (input.contains("%guild_alliances%")) {
-                Supplier<GuildDB> dbLazy = ArrayUtil.memorize(() -> (GuildDB) store2.getProvided(Key.of(GuildDB.class, Me.class), false));
+                Supplier<GuildDB> dbLazy = ArrayUtil.memoize(() -> (GuildDB) store2.getProvided(Key.of(GuildDB.class, Me.class), false));
                 GuildDB db = dbLazy.get();
                 if (db != null) {
                     String value = db.getAllianceIds(true).stream().map(f -> "AA:" + f).collect(Collectors.joining(","));

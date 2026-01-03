@@ -110,6 +110,7 @@ public final class Locutus extends ListenerAdapter {
     private final GuildShardManager manager = new GuildShardManager();
     private GuildCustomMessageHandler messageHandler;
     private DataDumpParser dataDumpParser;
+    private final AtomicBoolean rootSlashRegistered = new AtomicBoolean(false);
 
     private final Map<Long, GuildDB> guildDatabases = new ConcurrentHashMap<>();
     private final Object dataDumpParserLock = new Object();
@@ -229,22 +230,7 @@ public final class Locutus extends ListenerAdapter {
                     executor.submit(() -> slashCommands.registerCommandData(manager));
                     
                     // Also register for root server immediately (faster than global sync)
-                    if (Settings.INSTANCE.ROOT_SERVER > 0) {
-                        executor.submit(() -> {
-                            try {
-                                for (JDA jda : manager.getApis()) {
-                                    Guild rootGuild = jda.getGuildById(Settings.INSTANCE.ROOT_SERVER);
-                                    if (rootGuild != null) {
-                                        slashCommands.register(rootGuild);
-                                        Logg.text("Registered slash commands for root server");
-                                        break;
-                                    }
-                                }
-                            } catch (Throwable e) {
-                                Logg.text("Failed to register slash commands for root server: " + e.getMessage());
-                            }
-                        });
-                    }
+                    registerRootSlashCommandsAsync();
                 }
             } catch (Throwable e) {
                 // sometimes happen when discord api is spotty / timeout
@@ -355,6 +341,7 @@ public final class Locutus extends ListenerAdapter {
     @Override
     public void onGuildReady(@NotNull GuildReadyEvent event) {
         onGuildLoad(event.getGuild(), event.getJDA());
+        registerRootSlashCommandsAsync();
     }
 
     private void setSelfUser(GuildShardManager manager) {
@@ -373,6 +360,32 @@ public final class Locutus extends ListenerAdapter {
         for (Guild guild : jda.getGuilds()) {
             onGuildLoad(guild, jda);
         }
+        registerRootSlashCommandsAsync();
+    }
+
+    private void registerRootSlashCommandsAsync() {
+        if (Settings.INSTANCE.ROOT_SERVER <= 0) return;
+        if (!Settings.INSTANCE.ENABLED_COMPONENTS.SLASH_COMMANDS) return;
+
+        SlashCommandManager slashCommands = loader.getSlashCommandManager();
+        if (slashCommands == null) return;
+
+        executor.submit(() -> {
+            if (rootSlashRegistered.get()) return;
+            try {
+                for (JDA jda : manager.getApis()) {
+                    Guild rootGuild = jda.getGuildById(Settings.INSTANCE.ROOT_SERVER);
+                    if (rootGuild == null) continue;
+                    slashCommands.register(rootGuild);
+                    rootSlashRegistered.set(true);
+                    Logg.text("Registered slash commands for root server");
+                    return;
+                }
+                Logg.text("Root guild not found when registering slash commands; will retry on next ready event");
+            } catch (Throwable e) {
+                Logg.error("Failed to register slash commands for root server", e);
+            }
+        });
     }
 
     public GuildDB getRootCoalitionServer() {

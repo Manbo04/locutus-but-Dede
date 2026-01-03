@@ -803,12 +803,14 @@ public class SlashCommandManager extends ListenerAdapter {
                     Parser<?> binding = param.getBinding();
                     Key key = binding.getKey();
                     Key parserKey = key.append(Autoparse.class);
-                    Parser parser = manager.getStore().get(parserKey);
+                    Key completerKey = key.append(Autocomplete.class);
 
-                    if (parser == null) {
+                    // Prefer dedicated autocomplete provider when available; fall back to autoparse parser otherwise.
+                    Parser parser = manager.getStore().get(completerKey);
+                    if (parser != null) {
                         autoParse = false;
-                        Key completerKey = key.append(Autocomplete.class);
-                        parser = manager.getStore().get(completerKey);
+                    } else {
+                        parser = manager.getStore().get(parserKey);
                     }
 
                     if (parser == null) {

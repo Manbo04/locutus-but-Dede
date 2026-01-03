@@ -919,7 +919,7 @@ public final class PW {
         }
 
         if (cashValue == null) {
-            Supplier<String> getHash = ArrayUtil.memorize(() -> Hashing.md5()
+            Supplier<String> getHash = ArrayUtil.memoize(() -> Hashing.md5()
                     .hashString(Settings.INSTANCE.CONVERSION_SECRET + record.tx_id, StandardCharsets.UTF_8)
                     .toString());
             String hash = null;

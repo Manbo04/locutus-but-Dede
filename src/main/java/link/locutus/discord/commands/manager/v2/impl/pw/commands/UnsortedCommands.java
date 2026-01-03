@@ -1039,7 +1039,7 @@ public class UnsortedCommands {
     public static String handleAddbalanceAllianceScope(User author, Guild guild, Set<NationOrAllianceOrGuildOrTaxid> accounts) {
 //        Long allowedAAs = Roles.ECON.hasAlliance(author, guild);
         Map<Integer, Boolean> alliance = new Int2BooleanOpenHashMap();
-        Supplier<Boolean> hasGlobal = ArrayUtil.memorize(() -> {
+        Supplier<Boolean> hasGlobal = ArrayUtil.memoize(() -> {
             return Roles.ECON.has(author, guild);
         });
 
