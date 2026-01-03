@@ -225,7 +225,26 @@ public final class Locutus extends ListenerAdapter {
             try {
                 SlashCommandManager slashCommands = loader.getSlashCommandManager();
                 if (slashCommands != null) {
+                    // Register commands globally
                     executor.submit(() -> slashCommands.registerCommandData(manager));
+                    
+                    // Also register for root server immediately (faster than global sync)
+                    if (Settings.INSTANCE.ROOT_SERVER > 0) {
+                        executor.submit(() -> {
+                            try {
+                                for (JDA jda : manager.getApis()) {
+                                    Guild rootGuild = jda.getGuildById(Settings.INSTANCE.ROOT_SERVER);
+                                    if (rootGuild != null) {
+                                        slashCommands.register(rootGuild);
+                                        Logg.text("Registered slash commands for root server");
+                                        break;
+                                    }
+                                }
+                            } catch (Throwable e) {
+                                Logg.text("Failed to register slash commands for root server: " + e.getMessage());
+                            }
+                        });
+                    }
                 }
             } catch (Throwable e) {
                 // sometimes happen when discord api is spotty / timeout
