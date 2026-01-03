@@ -654,13 +654,17 @@ public class WarCategory {
             WarRoom room = entry.getValue();
             if (room.channel != null) {
                 Category category = room.channel.getParentCategory();
-                CityRanges range = getRangeFromCategory(category);
-                if (range != null && range.contains(room.target.getCities())) continue;
+                CityRanges currentRange = getRangeFromCategory(category);
+                int targetCities = room.target.getCities();
+                
+                // Check if room is already in the correct category
+                if (currentRange != null && currentRange.contains(targetCities)) continue;
 
+                // Try to find a matching ranged category
                 for (Map.Entry<CityRanges, List<Category>> rangeEntry : categoryRanges.entrySet()) {
-                    if (rangeEntry.getKey().contains(room.target.getCities())) {
+                    if (rangeEntry.getKey().contains(targetCities)) {
                         for (Category newCat : rangeEntry.getValue()) {
-                            if (newCat.getChannels().size() > 49) continue;
+                            if (newCat.getChannels().size() >= 50) continue;
                             RateLimitUtil.queue(room.channel.getManager().setParent(newCat));
                             moved++;
                             continue outer;
@@ -668,9 +672,10 @@ public class WarCategory {
                     }
                 }
 
-                if (range != null && !noRange.isEmpty()) {
+                // If no ranged category fits, move to a no-range category
+                if (!noRange.isEmpty()) {
                     for (Category newCat : noRange) {
-                        if (newCat.getChannels().size() > 49) continue;
+                        if (newCat.getChannels().size() >= 50) continue;
                         RateLimitUtil.queue(room.channel.getManager().setParent(newCat));
                         moved++;
                         continue outer;
