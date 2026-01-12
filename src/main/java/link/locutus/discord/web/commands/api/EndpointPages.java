@@ -179,7 +179,7 @@ public class EndpointPages extends PageHelper {
         return new WebUrl(mailUrl);
     }
 
-    @Command(viewable = true)
+    @Command(desc = "Get input options for a query type", viewable = true)
     @ReturnType(value = WebOptions.class, cache = CacheType.LocalStorage, duration = 30)
     public Object input_options(String type, @Me @Default GuildDB db, @Me @Default User user, @Me @Default DBNation nation) {
         PageHandler ph = WebRoot.getInstance().getPageHandler();
@@ -244,7 +244,7 @@ public class EndpointPages extends PageHelper {
         return success();
     }
 
-    @Command(viewable = true)
+    @Command(desc = "Retrieve current session information", viewable = true)
     @ReturnType(value = WebSession.class, cache = CacheType.LocalStorage)
     public Object session(WebStore ws, Context context, @Me @Default DBAuthRecord auth) throws IOException {
         Guild guild = auth == null ? null : AuthBindings.guild(context, auth.getNation(true), auth.getUser(true), false);

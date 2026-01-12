@@ -375,6 +375,10 @@ public class AuthBindings extends WebBindingHelper {
                 throw new RedirectResponse(HttpStatus.SEE_OTHER, getDiscordAuthUrl());
             }
             if ((user != null || nation != null) && (!requireNation || nation != null)) {
+                // Refresh timestamp periodically (every 6 hours) to keep session alive while reducing DB writes
+                if (record.shouldRefresh()) {
+                    record = WebRoot.db().updateToken(record.getUUID(), record.getNationId(), record.getUserId());
+                }
                 return record;
             }
         }

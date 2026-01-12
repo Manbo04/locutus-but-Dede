@@ -2452,7 +2452,7 @@ public class AdminCommands {
         return result.toString();
     }
 
-    @Command()
+    @Command(desc = "Test update all cities and return the number of changes detected")
     @RolePermission(value = Roles.ADMIN, root = true)
     public String syncCitiesTest(NationDB db) throws IOException, ParseException {
         StringBuilder result = new StringBuilder();

@@ -504,7 +504,7 @@ public class GraphEndpoints {
         return graph;
     }
 
-    @Command(viewable = true)
+    @Command(desc = "Graph of alliance statistics over time", viewable = true)
     @ReturnType(WebGraph.class)
     public WebGraph allianceStats(Set<AllianceMetric> metrics, @Timestamp long start, @Timestamp long end, Set<DBAlliance> coalition) {
         String title = "aaStats";

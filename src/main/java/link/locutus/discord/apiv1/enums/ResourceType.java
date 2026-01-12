@@ -189,6 +189,14 @@ public enum ResourceType {
     );
 
     public static Map<ResourceType, Double> parseResources(String arg, boolean allowBodmas) {
+        String trimmed = arg == null ? "" : arg.trim();
+        // Reject empty or half-open braces before invoking gson (avoids EOF errors)
+        if (trimmed.equals("{") || trimmed.equals("{}") || trimmed.matches("\{\s*\}")) {
+            throw new IllegalArgumentException("Resources are empty. Example: {steel=1234,aluminum=5678}");
+        }
+        if (trimmed.startsWith("{") && !trimmed.endsWith("}")) {
+            throw new IllegalArgumentException("Missing closing '}' in resources. Example: {steel=1234,aluminum=5678}");
+        }
         if (MathMan.isInteger(arg)) {
             throw new IllegalArgumentException("Please use `$" + arg + "` or `money=" + arg + "` for money, not `" + arg + "`");
         }
@@ -319,10 +327,16 @@ public enum ResourceType {
             } else {
                 result = parse.apply(arg);
             }
+            if (result.isEmpty()) {
+                throw new IllegalArgumentException("No resources found. Example: {steel=1234,aluminum=5678}");
+            }
         } catch (Exception e) {
+            System.err.println("Invalid resource amounts: " + arg);
             e.printStackTrace();
-            if (original.toUpperCase(Locale.ROOT).matches("[0-9]+[ASMGBILUOCF$]([ ][0-9]+[ASMGBILUOCF$])*")) {
-                String[] split = original.split(" ");
+            if (e instanceof com.google.gson.JsonSyntaxException) {
+                throw new IllegalArgumentException("Invalid resource format. Example: {steel=1234,aluminum=5678}");
+            }
+            throw e;
                 result = new LinkedHashMap<>();
                 for (String s : split) {
                     Character typeChar = s.charAt(s.length() - 1);

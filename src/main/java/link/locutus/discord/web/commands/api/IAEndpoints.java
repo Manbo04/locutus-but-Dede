@@ -40,7 +40,7 @@ import static link.locutus.discord.commands.manager.v2.impl.pw.binding.Permissio
 import static link.locutus.discord.commands.manager.v2.impl.pw.commands.WarCommands.getCounterChance;
 
 public class IAEndpoints extends PageHelper {
-    @Command(viewable = true)
+    @Command(desc = "Get member's internal affairs audits and checks", viewable = true)
     @IsMemberIngameOrDiscord
     @ReturnType(value = WebAudits.class, cache = CacheType.SessionStorage, duration = 30)
     public Object my_audits(@Me GuildDB db, @Me DBNation nation) throws IOException, ExecutionException, InterruptedException {
@@ -63,7 +63,7 @@ public class IAEndpoints extends PageHelper {
         return audits;
     }
 
-    @Command(viewable = true)
+    @Command(desc = "Get announcements for the logged-in member", viewable = true)
     @IsMemberIngameOrDiscord
     @ReturnType(value = WebAnnouncements.class, cache = CacheType.SessionStorage, duration = 30)
     public Object announcements(@Me GuildDB db, @Me DBNation nation) {
@@ -80,7 +80,7 @@ public class IAEndpoints extends PageHelper {
         return result;
     }
 
-    @Command(viewable = true)
+    @Command(desc = "Get announcement titles with optional read/unread filter", viewable = true)
     @IsMemberIngameOrDiscord
     @ReturnType(value = WebAnnouncements.class)
     public Object announcement_titles(@Me GuildDB db, @Me DBNation nation, @Switch("r") boolean read) {
@@ -97,7 +97,7 @@ public class IAEndpoints extends PageHelper {
         return result;
     }
 
-    @Command(viewable = true)
+    @Command(desc = "View a specific announcement by ID", viewable = true)
     @IsMemberIngameOrDiscord
     @ReturnType(value = WebAnnouncement.class, cache = CacheType.SessionStorage)
     public Object view_announcement(@Me GuildDB db, @Me DBNation nation, int ann_id) {

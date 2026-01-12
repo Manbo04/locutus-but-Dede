@@ -167,6 +167,15 @@ public class WebRoot {
 
         this.pageHandler = new PageHandler(this);
         this.webDB = new WebDB();
+        
+        // Schedule periodic cleanup of expired sessions (once per day)
+        Locutus.imp().getRepeatingTasks().addTask("Web Session Cleanup", () -> {
+            try {
+                webDB.deleteOldTempAuth();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }, 24 * 60 * 60, java.util.concurrent.TimeUnit.SECONDS);
 
 //        // Disabled. Client doesn't reliably send referrer info
 //        app.beforeMatched(ctx -> {

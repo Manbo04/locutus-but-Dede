@@ -55,6 +55,14 @@ public class DBAuthRecord {
     public boolean isExpired() {
         return System.currentTimeMillis() - timestamp > TimeUnit.DAYS.toMillis(Settings.INSTANCE.WEB.SESSION_TIMEOUT_DAYS);
     }
+    
+    /**
+     * Check if the session timestamp should be refreshed.
+     * Only refresh if more than 6 hours have passed since last update to reduce DB writes.
+     */
+    public boolean shouldRefresh() {
+        return System.currentTimeMillis() - timestamp > TimeUnit.HOURS.toMillis(6);
+    }
 
     /**
      * Convert this record to a map for JSON serialization
