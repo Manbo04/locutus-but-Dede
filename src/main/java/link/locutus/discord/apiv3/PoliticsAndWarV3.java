@@ -455,6 +455,12 @@ public class PoliticsAndWarV3 {
         }
         if (throwRuntime) throw new RuntimeException(msg);
         if (e instanceof HttpClientErrorException.Unauthorized unauthorized) {
+            // Drop the offending API key so we stop spamming 401s and force a refresh.
+            try {
+                pair.deleteApiKey();
+            } catch (Throwable ignore) {
+                // best-effort cleanup
+            }
             throw HttpClientErrorException.create(msg, unauthorized.getStatusCode(), unauthorized.getStatusText(), unauthorized.getResponseHeaders(), unauthorized.getResponseBodyAsByteArray(), /* charset utf-8 */ StandardCharsets.UTF_8);
         }
     }

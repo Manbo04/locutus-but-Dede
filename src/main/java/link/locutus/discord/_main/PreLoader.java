@@ -12,7 +12,7 @@ import link.locutus.discord.commands.manager.CommandManager;
 import link.locutus.discord.commands.manager.v2.impl.SlashCommandManager;
 import link.locutus.discord.commands.manager.v2.impl.pw.CommandManager2;
 import link.locutus.discord.commands.stock.StockDB;
-import link.locutus.discord.config.Settings;
+import link.locutusconfig.Settings;
 import link.locutus.discord.db.*;
 import link.locutus.discord.pnw.PNWUser;
 import link.locutus.discord.util.FileUtil;
@@ -32,9 +32,14 @@ import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -122,6 +127,14 @@ public class PreLoader implements ILoader {
         this.stockDB = add("Stock Database", StockDB::new);
         this.bankDb = add("Bank Database", BankDB::new);
         this.tradeManager = add("Trade Database", () -> new TradeManager().load());
+        add("Seed API key from env", () -> {
+            seedApiKeyFromEnv();
+            return null;
+        });
+        add("Seed coalitions from env", () -> {
+            seedCoalitionsFromEnv();
+            return null;
+        });
         if (Settings.INSTANCE.FORUM_FEED_SERVER > 0) {
             this.forumDb = add("Forum Database", () -> new ForumDB(Settings.INSTANCE.FORUM_FEED_SERVER));
         } else {
@@ -579,5 +592,104 @@ public class PreLoader implements ILoader {
     @Override
     public PoliticsAndWarV3 getApiPool() {
         return FileUtil.get(apiV3Pool);
+    }
+
+    private void seedApiKeyFromEnv() {
+        String nationIdRaw = System.getenv("SEED_API_NATION_ID");
+        String apiKey = System.getenv("SEED_API_KEY");
+        String botKey = System.getenv("SEED_API_BOT_KEY");
+        if (nationIdRaw == null || nationIdRaw.isBlank() || apiKey == null || apiKey.isBlank()) {
+            return;
+        }
+        int nationId;
+        try {
+            nationId = Integer.parseInt(nationIdRaw.trim());
+        } catch (NumberFormatException e) {
+            Logg.text("Invalid SEED_API_NATION_ID env var: " + nationIdRaw);
+            return;
+        }
+
+        try {
+            DiscordDB db = getDiscordDB();
+            ApiKeyPool.ApiKey existing = db.getApiKey(nationId);
+            if (existing != null && apiKey.equalsIgnoreCase(existing.getKey())) {
+                return; // already set to same key
+            }
+            db.addApiKey(nationId, apiKey, botKey);
+            Logg.text("Seeded API key for nation " + nationId + " from env var");
+        } catch (Throwable e) {
+            Logg.text("Failed to seed API key from env: " + e.getMessage());
+        }
+    }
+
+    private void seedCoalitionsFromEnv() {
+        String seed = System.getenv("SEED_COALITIONS");
+        if (seed == null || seed.isBlank()) return;
+        String baseDir = Settings.INSTANCE.DATABASE.SQLITE.DIRECTORY;
+        String[] entries = seed.split(",");
+        List<Integer> alliancesToFetch = new ArrayList<>();
+        
+        for (String entry : entries) {
+            String trimmed = entry.trim();
+            if (trimmed.isEmpty()) continue;
+            String[] parts = trimmed.split(":");
+            if (parts.length < 3) {
+                Logg.text("Invalid SEED_COALITIONS entry (expected guildId:coalition:allianceId): " + trimmed);
+                continue;
+            }
+            long guildId;
+            long allianceId;
+            String coalition = parts[1].toLowerCase(Locale.ROOT);
+            try {
+                guildId = Long.parseLong(parts[0]);
+                allianceId = Long.parseLong(parts[2]);
+            } catch (NumberFormatException ex) {
+                Logg.text("Invalid ids in SEED_COALITIONS entry: " + trimmed);
+                continue;
+            }
+            
+            // Check if alliance exists in NationDB, if not fetch it
+            NationDB ndb = getNationDB();
+            if (ndb.getAlliance((int)allianceId) == null) {
+                alliancesToFetch.add((int)allianceId);
+            }
+
+            File dbFile = new File(baseDir + File.separator + "guilds" + File.separator + guildId + ".db");
+            if (!dbFile.getParentFile().exists() && !dbFile.getParentFile().mkdirs()) {
+                Logg.text("Failed to create guild db directory: " + dbFile.getParent());
+                continue;
+            }
+            String connectStr = "jdbc:sqlite:" + dbFile.getAbsolutePath();
+            try {
+                Class.forName("org.sqlite.JDBC");
+            } catch (ClassNotFoundException e) {
+                Logg.text("SQLite driver not found: " + e.getMessage());
+                continue;
+            }
+            try (Connection conn = DriverManager.getConnection(connectStr)) {
+                conn.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS `COALITIONS` (`alliance_id` BIGINT NOT NULL, `coalition` VARCHAR NOT NULL, `date_updated` BIGINT NOT NULL, PRIMARY KEY(alliance_id, coalition))");
+                try (PreparedStatement ps = conn.prepareStatement("INSERT OR IGNORE INTO `COALITIONS`(`alliance_id`, `coalition`, `date_updated`) VALUES(?, ?, ?)")) {
+                    ps.setLong(1, allianceId);
+                    ps.setString(2, coalition);
+                    ps.setLong(3, System.currentTimeMillis());
+                    ps.executeUpdate();
+                }
+                Logg.text("Seeded coalition `" + coalition + "` for guild " + guildId + " -> target " + allianceId);
+            } catch (SQLException e) {
+                Logg.text("Failed to seed coalition for guild " + guildId + ": " + e.getMessage());
+            }
+        }
+        
+        // Fetch missing alliances
+        if (!alliancesToFetch.isEmpty()) {
+            try {
+                NationDB ndb = getNationDB();
+                Logg.text("Fetching " + alliancesToFetch.size() + " missing alliance(s) for coalition seeding: " + alliancesToFetch);
+                ndb.updateAlliancesById(alliancesToFetch, null);
+                Logg.text("Alliance fetch complete");
+            } catch (Exception e) {
+                Logg.text("Failed to fetch alliances for coalition seeding: " + e.getMessage());
+            }
+        }
     }
 }

@@ -2,6 +2,7 @@
 
 # Create config directory if it doesn't exist
 mkdir -p config
+mkdir -p "${DATABASE_SQLITE_DIRECTORY:-/data/locutus}"
 
 # Trim whitespace from environment variables
 BOT_TOKEN=$(echo "$BOT_TOKEN" | tr -d '[:space:]')
@@ -45,6 +46,12 @@ API_KEY_PRIMARY: "${API_KEY_PRIMARY}"
 
 # Optional: P&W verified bot key (for banking/ingame actions)
 ACCESS_KEY: "${ACCESS_KEY}"
+
+# Database configuration (SQLite only)
+DATABASE:
+  SQLITE:
+    USE: true
+    DIRECTORY: "${DATABASE_SQLITE_DIRECTORY:-/data/locutus}"
 
 # Optional: Support server invite code
 SUPPORT_INVITE: "cUuskPDrB7"
