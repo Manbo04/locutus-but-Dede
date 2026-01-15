@@ -2,7 +2,18 @@
 
 # Create config directory if it doesn't exist
 mkdir -p config
-mkdir -p "${DATABASE_SQLITE_DIRECTORY:-/data/locutus}"
+
+# Database directory - this will be the persistent volume mount point
+# Railway mounts the volume at /app/database
+DATABASE_DIR="${DATABASE_SQLITE_DIRECTORY:-/app/database}"
+mkdir -p "$DATABASE_DIR"
+mkdir -p "$DATABASE_DIR/guilds"
+
+# Create symlink from /data/locutus to actual database dir for compatibility
+mkdir -p /data
+if [ ! -e /data/locutus ]; then
+    ln -sf "$DATABASE_DIR" /data/locutus
+fi
 
 # Trim whitespace from environment variables
 BOT_TOKEN=$(echo "$BOT_TOKEN" | tr -d '[:space:]')
@@ -51,7 +62,7 @@ ACCESS_KEY: "${ACCESS_KEY}"
 DATABASE:
   SQLITE:
     USE: true
-    DIRECTORY: "${DATABASE_SQLITE_DIRECTORY:-/data/locutus}"
+    DIRECTORY: "$DATABASE_DIR"
 
 # Optional: Support server invite code
 SUPPORT_INVITE: "cUuskPDrB7"
