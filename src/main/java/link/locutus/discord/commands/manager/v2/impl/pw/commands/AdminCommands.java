@@ -125,6 +125,19 @@ import java.util.stream.Collectors;
 import static link.locutus.discord.commands.manager.v2.binding.annotation.Kw.*;
 
 public class AdminCommands {
+    @Command(desc = "Delete all API keys from the database (EMERGENCY RESET)")
+    @RolePermission(value = Roles.ADMIN, root = true)
+    public String purgeAllApiKeys(@Me IMessageIO io, @Me JSONObject command, @Switch("f") boolean force) {
+        if (!force) {
+            io.create()
+                    .confirmation("Purge All API Keys", "This will delete ALL stored API keys from the database. The bot will use API_KEY_PRIMARY from environment on restart. Continue?", command)
+                    .send();
+            return null;
+        }
+        Locutus.imp().getDiscordDB().deleteAllApiKeys();
+        return "✅ Deleted all API keys from database. Restart the bot to use API_KEY_PRIMARY from environment.";
+    }
+
     @Command
     @RolePermission(value = Roles.ADMIN, root = true)
     public String cullInactiveGuilds(@Me JSONObject command, @Me GuildDB thisDb, @Me IMessageIO io,
