@@ -95,6 +95,7 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 public final class Locutus extends ListenerAdapter {
@@ -383,7 +384,7 @@ public final class Locutus extends ListenerAdapter {
                 }
                 Logg.text("Root guild not found when registering slash commands; will retry on next ready event");
             } catch (Throwable e) {
-                Logg.error("Failed to register slash commands for root server", e);
+                Logg.error("Failed to register slash commands for root server: " + e);
             }
         });
     }

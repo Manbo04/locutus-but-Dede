@@ -12,7 +12,7 @@ import link.locutus.discord.commands.manager.CommandManager;
 import link.locutus.discord.commands.manager.v2.impl.SlashCommandManager;
 import link.locutus.discord.commands.manager.v2.impl.pw.CommandManager2;
 import link.locutus.discord.commands.stock.StockDB;
-import link.locutusconfig.Settings;
+import link.locutus.discord.config.Settings;
 import link.locutus.discord.db.*;
 import link.locutus.discord.pnw.PNWUser;
 import link.locutus.discord.util.FileUtil;

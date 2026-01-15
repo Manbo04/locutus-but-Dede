@@ -2386,7 +2386,6 @@ public class CM {
 
             }
         }
-        @AutoRegister(clazz=link.locutus.discord._test.command.CustomCommands.class,method="buyInfra")
         public static class buyInfra extends CommandRef {
             public static final buyInfra cmd = new buyInfra();
         public buyInfra upTo(String value) {
@@ -2398,7 +2397,6 @@ public class CM {
         }
 
         }
-        @AutoRegister(clazz=link.locutus.discord._test.command.CustomCommands.class,method="buyLand")
         public static class buyLand extends CommandRef {
             public static final buyLand cmd = new buyLand();
         public buyLand upTo(String value) {
@@ -6763,7 +6761,6 @@ public class CM {
 
             }
         }
-        @AutoRegister(clazz=link.locutus.discord._test.command.CustomCommands.class,method="loadAttacks")
         public static class loadAttacks extends CommandRef {
             public static final loadAttacks cmd = new loadAttacks();
         public loadAttacks naval(String value) {
@@ -8761,7 +8758,6 @@ public class CM {
 
             }
         }
-        @AutoRegister(clazz=link.locutus.discord._test.command.CustomCommands.class,method="safekeep")
         public static class safekeep extends CommandRef {
             public static final safekeep cmd = new safekeep();
         public safekeep warchest(String value) {
@@ -16616,7 +16612,6 @@ public class CM {
 
             }
         }
-        @AutoRegister(clazz=link.locutus.discord._test.command.CustomCommands.class,method="tradeAverageCodes")
         public static class tradeAverageCodes extends CommandRef {
             public static final tradeAverageCodes cmd = new tradeAverageCodes();
 

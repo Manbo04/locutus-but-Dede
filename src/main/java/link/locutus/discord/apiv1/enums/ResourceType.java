@@ -336,15 +336,17 @@ public enum ResourceType {
             if (e instanceof com.google.gson.JsonSyntaxException) {
                 throw new IllegalArgumentException("Invalid resource format. Example: {steel=1234,aluminum=5678}");
             }
-            throw e;
+            try {
+                String[] split = arg.replace("{", "").replace("}", "").split(",");
                 result = new LinkedHashMap<>();
                 for (String s : split) {
+                    if (s.isEmpty()) continue;
                     Character typeChar = s.charAt(s.length() - 1);
                     ResourceType type1 = parseChar(typeChar);
                     double amount = MathMan.parseDouble(s.substring(0, s.length() - 1));
                     result.put(type1, amount);
                 }
-            } else {
+            } catch (Exception ex) {
                 return handleResourceError(arg, e);
             }
         }
