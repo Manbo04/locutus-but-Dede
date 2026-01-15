@@ -149,7 +149,6 @@ public class PreLoader implements ILoader {
             Settings.INSTANCE.save(Settings.INSTANCE.getDefaultFile());
         }
 
-        String envApiKey = System.getenv("API_KEY_PRIMARY");
         this.discordDB = add("Discord Database", DiscordDB::new);
         this.nationDB = add("Nation Database", () -> new NationDB().load());
         add("Flag Outdated Cities", () -> {
