@@ -131,11 +131,6 @@ public class PreLoader implements ILoader {
             seedApiKeyFromEnv();
             return null;
         });
-        add("Purge invalid API keys on startup", () -> {
-            getDiscordDB().deleteAllApiKeys();
-            Logg.text("Purged all stored API keys; using API_KEY_PRIMARY from environment");
-            return null;
-        });
         add("Seed coalitions from env", () -> {
             seedCoalitionsFromEnv();
             return null;

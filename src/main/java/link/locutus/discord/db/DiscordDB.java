@@ -403,13 +403,6 @@ public class DiscordDB extends DBMainV2 implements SyncableDatabase {
         });
     }
 
-    public void deleteAllApiKeys() {
-        synchronized (this) {
-            logDeletion("API_KEYS3", System.currentTimeMillis(), "ALL", "ALL");
-            executeStmt("DELETE FROM API_KEYS3");
-        }
-    }
-
     public Integer getNationFromApiKey(String key) {
         return getNationFromApiKey(key, true);
     }
