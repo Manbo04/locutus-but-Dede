@@ -1,6 +1,7 @@
 package com.boydti.discord.apiv3;
 
 import com.boydti.discord.Locutus;
+import com.boydti.discord.Logg;
 import com.boydti.discord.apiv1.entities.ApiRecord;
 import com.boydti.discord.config.Settings;
 import com.boydti.discord.util.PnwUtil;
@@ -58,6 +59,16 @@ public class PoliticsAndWarV3 {
     }
 
     public <T> T readTemplate(GraphQLRequest graphQLRequest, Class<T> resultBody) {
+        // Short-circuit requests when API usage is disabled to avoid repeated 401s
+        try {
+            if (!Settings.INSTANCE.ENABLED_COMPONENTS.USE_API) {
+                Logg.text("API usage disabled; skipping GraphQL request to avoid 401 Unauthorized responses");
+                return null;
+            }
+        } catch (Throwable ignored) {
+            // If settings are not accessible for some reason, proceed and let errors surface
+        }
+
         ResponseEntity<T> exchange = null;
 
         int j = 0;

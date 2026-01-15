@@ -2,7 +2,6 @@ package com.boydti.discord.util;
 
 import com.boydti.discord.util.math.CIEDE2000;
 import com.boydti.discord.web.jooby.adapter.JoobyMessageAction;
-import com.overzealous.remark.Remark;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.MessageReaction;
@@ -131,8 +130,20 @@ public class MarkupUtil {
     }
 
     public static String htmlToMarkdown(String source) {
-        Remark remark = new Remark();
-        return remark.convert(source);
+        try {
+            Class<?> remarkClass = Class.forName("com.overzealous.remark.Remark");
+            Object remark = remarkClass.getDeclaredConstructor().newInstance();
+            java.lang.reflect.Method convert = remarkClass.getMethod("convert", String.class);
+            return (String) convert.invoke(remark, source);
+        } catch (Throwable t) {
+            // Fallback: strip tags and convert breaks to newlines if Remark is not available
+            try {
+                String s = source.replaceAll("(?i)<br\\s*/?>", "\n");
+                return s.replaceAll("<[^>]+>", "");
+            } catch (Throwable ignored) {
+                return source;
+            }
+        }
     }
 
     public static String transformURLIntoLinks(String text){
