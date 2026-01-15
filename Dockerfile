@@ -13,16 +13,7 @@ COPY src/ src/
 # Copy pre-generated jOOQ sources (committed to git, generated from SQLite schemas)
 COPY build/generated-src/ build/generated-src/
 
-# --- HARDCODED KEY FIX ---
-# We are pasting the key directly here to bypass the Railway UI issue.
-ENV PNW_KEY=28b5d27d6a88e91d5408
-ENV apiKey=28b5d27d6a88e91d5408
-
-# Create config files manually so the builder finds them
-RUN echo "apiKey: 28b5d27d6a88e91d5408" > bot_config.json && \
-    echo "pnwKey: 28b5d27d6a88e91d5408" >> bot_config.json && \
-    echo "apiKey: 28b5d27d6a88e91d5408" > config.yml && \
-    echo "pnwKey: 28b5d27d6a88e91d5408" >> config.yml
+# Config files are provided at runtime by entrypoint.sh using env vars; do not bake API keys into the image
 
 # Remove references to missing _test.command package (private developer code not in public repo)
 RUN sed -i '/_test\.command/d' src/main/java/link/locutus/discord/commands/manager/v2/impl/pw/refs/CM.java

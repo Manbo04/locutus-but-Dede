@@ -191,7 +191,7 @@ public enum ResourceType {
     public static Map<ResourceType, Double> parseResources(String arg, boolean allowBodmas) {
         String trimmed = arg == null ? "" : arg.trim();
         // Reject empty or half-open braces before invoking gson (avoids EOF errors)
-        if (trimmed.equals("{") || trimmed.equals("{}") || trimmed.matches("\{\s*\}")) {
+        if (trimmed.equals("{") || trimmed.equals("{}") || trimmed.matches("\\{\\s*\\}")) {
             throw new IllegalArgumentException("Resources are empty. Example: {steel=1234,aluminum=5678}");
         }
         if (trimmed.startsWith("{") && !trimmed.endsWith("}")) {
