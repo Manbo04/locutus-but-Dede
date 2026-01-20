@@ -163,16 +163,43 @@ public class DiscordDB extends DBMain {
      * Validate all DB-stored API keys and remove any that return Unauthorized or are otherwise invalid.
      */
     public void validateAndCleanupApiKeys() {
+        // Respect an opt-out env var for safety in production
+        String disable = System.getenv("DISABLE_API_CLEANUP");
+        if (disable != null && disable.equalsIgnoreCase("true")) {
+            System.out.println("API key validation skipped due to DISABLE_API_CLEANUP=true");
+            return;
+        }
+
         Map<Integer, String> keys = listApiKeys();
         if (keys.isEmpty()) return;
+
+        Map<Integer, String> invalid = new HashMap<>();
         for (Map.Entry<Integer, String> entry : keys.entrySet()) {
             String key = entry.getValue();
             try {
                 new PoliticsAndWarV3(key).getApiKeyStats();
+            } catch (org.springframework.web.client.HttpClientErrorException.Unauthorized u) {
+                invalid.put(entry.getKey(), "401 Unauthorized");
             } catch (Exception e) {
-                // If we get an unauthorized or other error, remove the key to prevent repeated failures
-                System.out.println("Removing invalid API key for nation " + entry.getKey() + " due to validation error: " + e.getMessage());
-                removeApiKeyByHex(key);
+                // Do not remove on transient or generic errors; report for manual review
+                invalid.put(entry.getKey(), e.getMessage());
+            }
+        }
+
+        if (!invalid.isEmpty()) {
+            // Write a report to backups so admins can review and act explicitly
+            try {
+                String ts = java.time.Instant.now().toString().replace(':','-');
+                java.nio.file.Path out = java.nio.file.Paths.get("backups/api_key_validation_" + ts + ".txt");
+                java.nio.file.Files.createDirectories(out.getParent());
+                try (java.io.Writer w = java.nio.file.Files.newBufferedWriter(out, java.nio.charset.StandardCharsets.UTF_8)) {
+                    for (Map.Entry<Integer, String> e : invalid.entrySet()) {
+                        w.write(e.getKey() + ": " + e.getValue() + "\n");
+                    }
+                }
+                System.out.println("API key validation completed - found " + invalid.size() + " problematic keys. Report saved to " + out.toString());
+            } catch (Exception ex) {
+                ex.printStackTrace();
             }
         }
     }
