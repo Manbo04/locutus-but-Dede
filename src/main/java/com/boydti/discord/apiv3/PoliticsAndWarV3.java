@@ -76,6 +76,12 @@ public class PoliticsAndWarV3 {
                     throw e;
                 }
                 pool.removeKey(key);
+                try {
+                    // Attempt to remove the offending key from persistent storage if present
+                    Locutus.imp().getDiscordDB().removeApiKeyByHex(key);
+                } catch (Exception ex) {
+                    // ignore failures here
+                }
             }
         }
         T result = exchange.getBody();

@@ -150,6 +150,15 @@ public class PreLoader implements ILoader {
         }
 
         this.discordDB = add("Discord Database", DiscordDB::new);
+        // Validate DB-stored API keys at startup and remove invalid ones to prevent repeated 401s
+        add("Validate DB API keys", () -> {
+            try {
+                getDiscordDB().validateAndCleanupApiKeys();
+            } catch (Exception e) {
+                Logg.text("Failed to validate/cleanup API keys: " + e.getMessage());
+            }
+            return null;
+        });
         this.nationDB = add("Nation Database", () -> new NationDB().load());
         add("Flag Outdated Cities", () -> {
             getNationDB().markDirtyIncorrectNations();

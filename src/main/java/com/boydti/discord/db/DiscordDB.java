@@ -127,6 +127,56 @@ public class DiscordDB extends DBMain {
         return null;
     }
 
+    /**
+     * Returns a map of nation_id -> api_key (hex string) from the API_KEYS table.
+     */
+    public Map<Integer, String> listApiKeys() {
+        Map<Integer, String> result = new HashMap<>();
+        try (PreparedStatement stmt = prepareQuery("select nation_id, api_key FROM API_KEYS")) {
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    int nationId = rs.getInt("nation_id");
+                    long keyId = rs.getLong("api_key");
+                    result.put(nationId, Long.toHexString(keyId));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    /**
+     * Remove the API key row matching the given hex key (if present).
+     */
+    public void removeApiKeyByHex(String keyHex) {
+        try {
+            long keyId = new BigInteger(keyHex, 16).longValue();
+            update("DELETE FROM API_KEYS WHERE api_key = ?", (ThrowingConsumer<PreparedStatement>) stmt -> stmt.setLong(1, keyId));
+            System.out.println("Removed invalid API key from DB: " + keyHex);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Validate all DB-stored API keys and remove any that return Unauthorized or are otherwise invalid.
+     */
+    public void validateAndCleanupApiKeys() {
+        Map<Integer, String> keys = listApiKeys();
+        if (keys.isEmpty()) return;
+        for (Map.Entry<Integer, String> entry : keys.entrySet()) {
+            String key = entry.getValue();
+            try {
+                new PoliticsAndWarV3(key).getApiKeyStats();
+            } catch (Exception e) {
+                // If we get an unauthorized or other error, remove the key to prevent repeated failures
+                System.out.println("Removing invalid API key for nation " + entry.getKey() + " due to validation error: " + e.getMessage());
+                removeApiKeyByHex(key);
+            }
+        }
+    }
+
     private Map<DiscordMeta, Map<Long, byte[]>> info;
 
 
