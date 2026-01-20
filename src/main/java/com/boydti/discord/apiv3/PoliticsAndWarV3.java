@@ -75,13 +75,11 @@ public class PoliticsAndWarV3 {
                     e.printStackTrace();
                     throw e;
                 }
+                // Remove key from the in-memory rotation so we don't repeatedly use a key that caused a 401
                 pool.removeKey(key);
-                try {
-                    // Attempt to remove the offending key from persistent storage if present
-                    Locutus.imp().getDiscordDB().removeApiKeyByHex(key);
-                } catch (Exception ex) {
-                    // ignore failures here
-                }
+                // Do NOT remove the key from persistent storage automatically - that could erase valid
+                // configuration. Persistent removals must be audited and performed by an admin action.
+                Logg.text("API key returned 401 Unauthorized (in-memory rotation removed): " + key);
             }
         }
         T result = exchange.getBody();
