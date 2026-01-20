@@ -96,6 +96,26 @@ public final class FileUtil {
     public static String readStringFromURL(String requestURL) throws IOException {
         URL website = new URL(requestURL);
         URLConnection connection = website.openConnection();
+
+        // For Politics & War subscription snapshot endpoints, a verified bot key must be provided
+        // via the X-Bot-Key header. If an ACCESS_KEY is configured, add it automatically so we
+        // don't accidentally call bot-only endpoints using a nation API key in the query string.
+        try {
+            if ((requestURL.contains("/subscriptions/") || requestURL.contains("/snapshot"))) {
+                String botKey = null;
+                try {
+                    botKey = com.boydti.discord.config.Settings.INSTANCE.ACCESS_KEY;
+                } catch (Throwable t) {
+                    // ignore if Settings not available
+                }
+                if (botKey != null && !botKey.isBlank()) {
+                    connection.setRequestProperty("X-Bot-Key", botKey.trim());
+                }
+            }
+        } catch (Throwable t) {
+            // defensive: don't fail the request for header detection issues
+        }
+
         try (BufferedReader in = new BufferedReader(
             new InputStreamReader(connection.getInputStream()))) {
 
