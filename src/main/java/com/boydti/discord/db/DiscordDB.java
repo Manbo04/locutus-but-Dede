@@ -77,6 +77,20 @@ public class DiscordDB extends DBMain {
     }
 
     public void addApiKey(int nationId, String key) {
+        // Validate the key before persisting to avoid storing invalid keys that cause repeated 401s.
+        try {
+            com.politicsandwar.graphql.model.ApiKeyDetails stats = new PoliticsAndWarV3(key).getApiKeyStats();
+            if (stats == null || stats.getKey() == null) {
+                Logg.text("Refusing to add API key for nation " + nationId + " - validation failed.");
+                return;
+            }
+        } catch (Exception e) {
+            // On validation failure, DO NOT persist the key. This prevents transient or invalid
+            // keys from being stored and causing repeated unauthorized requests.
+            Logg.text("Refusing to add API key for nation " + nationId + " due to validation error: " + e.getMessage());
+            return;
+        }
+
         long keyId = new BigInteger(key, 16).longValue();
         update("INSERT OR REPLACE INTO `API_KEYS`(`nation_id`, `api_key`) VALUES(?, ?)", (ThrowingConsumer<PreparedStatement>) stmt -> {
             stmt.setInt(1, nationId);
